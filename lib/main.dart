@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:waterlevelcopy/sccreeens/HomeScreen.dart';
+import 'UI/dashboard/dashboardScreen.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const WaterLevelApp());
@@ -13,11 +14,8 @@ class WaterLevelApp extends StatelessWidget {
     return MaterialApp(
       title: 'Water Level BLE',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
-      home: const DashboardScreen(), // Directly open HomeScreen
+      theme: AppTheme.light(),
+      home: const DashboardScreen(),
     );
   }
 }

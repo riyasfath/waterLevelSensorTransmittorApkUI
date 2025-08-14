@@ -1,49 +1,47 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Brand colors (single solid app bar color)
-  static const Color primary = Color(0xFF0181D7); // <- your app bar color
-  static const Color surface = Color(0xFFF6F7FB);
-  static const Color card = Colors.white;
-  static const Color primaryTransparent = Color(0x990181D7); // #0181D799
-
+  // Brand colors
+  static const Color primary = Color(0xFF0181D7);
+  static const Color textDark = Color(0xFF272A2F);
 
   static ThemeData light() {
     final base = ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: surface,
+      // 👇 Make all screens (incl. Dashboard) pure white by default
+      scaffoldBackgroundColor: Colors.white,
+      canvasColor: Colors.white,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primary,
         primary: primary,
-        surface: surface,
-        background: surface,
+        surface: Colors.white,
+        background: Colors.white,
         brightness: Brightness.light,
       ),
     );
 
     return base.copyWith(
+      // Keep app bar solid brand color, no tint
       appBarTheme: const AppBarTheme(
         elevation: 0,
-        backgroundColor: primary,   // <- used by our header
+        backgroundColor: primary,
         foregroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         centerTitle: true,
       ),
+      // Ensure cards/dialogs don’t add gray surface tints
+      cardColor: Colors.white,
+      dialogBackgroundColor: Colors.white,
+      dividerColor: const Color(0xFFE6E8EB),
+      // Text color defaults
       textTheme: base.textTheme.apply(
-        bodyColor: Color(0xFF272A2F),
-        displayColor: Color(0xFF272A2F),
+        bodyColor: textDark,
+        displayColor: textDark,
       ),
-      chipTheme: base.chipTheme.copyWith(
-        selectedColor: primary,
-        backgroundColor: Color(0xFFE7F3FF),
-        labelStyle: const TextStyle(fontWeight: FontWeight.w600),
-        side: BorderSide.none,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-      cardTheme: CardTheme(
-        color: card,
-        elevation: 0,
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      // Double-ensure Material 3 surfaces stay white
+      colorScheme: base.colorScheme.copyWith(
+        surface: Colors.white,
+        background: Colors.white,
       ),
     );
   }
