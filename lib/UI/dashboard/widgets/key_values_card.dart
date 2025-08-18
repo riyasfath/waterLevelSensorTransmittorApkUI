@@ -49,7 +49,7 @@ class DataReceiptSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Data receipt', style: _titleStyle),
+          const Text('Data receipt type', style: _titleStyle),
           const SizedBox(height: 8),
 
           // Device id field

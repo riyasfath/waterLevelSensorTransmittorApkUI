@@ -3,7 +3,7 @@ import 'package:waterlevelcopy/UI/dashboard/widgets/battery_field.dart';
 import 'package:waterlevelcopy/UI/dashboard/widgets/key_values_card.dart';
 
 // Widgets
-import 'widgets/header_compact.dart';
+import 'widgets/header_things.dart';
 import 'widgets/device_tabs.dart';
 import 'widgets/tank_card.dart';
 import 'widgets/labeled_info_row.dart';
@@ -27,7 +27,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          HeaderCompact(
+          headerThings(
             date: "12/08/2025",
             time: "4:39pm",
             onSettings: () {},

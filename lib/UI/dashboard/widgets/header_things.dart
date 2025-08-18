@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
 
-class HeaderCompact extends StatelessWidget {
+class headerThings extends StatelessWidget {
   final String date, time;
   final VoidCallback onSettings;
-  const HeaderCompact({
+  const headerThings({
     super.key,
     required this.date,
     required this.time,
