@@ -13,9 +13,12 @@ class AppTheme {
   // CTA Button color (#012A6A)
   static const Color kButtonDark = Color(0xFF012A6A);
 
-  // TextField theming (as requested)
+  // TextField theming
   static const Color kHintColor = Color(0x664F4F4F); // #4F4F4F66
   static const Color kFieldFill = Color(0x42D9D9D9); // #D9D9D942
+
+  // Device tabs border color — you gave #0181D799 (RRGGBBAA) → Flutter ARGB 0x990181D7
+  static const Color kDeviceTabBorder = Color(0x990181D7);
 
   static ThemeData light() {
     final base = ThemeData(
@@ -64,7 +67,7 @@ class AppTheme {
       // Surfaces
       cardColor: Colors.white,
       dialogBackgroundColor: Colors.white,
-      dividerColor: const Color(0xFFE6E8EB),
+      dividerColor: Color(0xFFE6E8EB),
 
       // Text defaults
       textTheme: base.textTheme.apply(
@@ -72,7 +75,6 @@ class AppTheme {
         displayColor: textDark,
       ),
 
-      // Ensure M3 surfaces stay white
       colorScheme: base.colorScheme.copyWith(
         surface: Colors.white,
         background: Colors.white,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_theme.dart';
 
 class DeviceTabs extends StatelessWidget {
   final int index;
@@ -13,9 +14,9 @@ class DeviceTabs extends StatelessWidget {
         final selected = index == i;
         return Expanded(
           child: Padding(
-            padding: EdgeInsets.only(right: i < items.length - 1 ? 8 : 0),
+            padding: EdgeInsets.only(right: i < items.length - 1 ? 6 : 0),
             child: InkWell(
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(10),
               onTap: () => onChanged(i),
               child: Container(
                 height: 36,
@@ -23,7 +24,7 @@ class DeviceTabs extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: selected
                       ? const LinearGradient(
-                    colors: [Color(0xFF6DC1FD), Color(0xFF095C97)],
+                    colors: [AppTheme.kBlueLight, AppTheme.kBlueDark],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   )
@@ -31,7 +32,10 @@ class DeviceTabs extends StatelessWidget {
                   color: selected ? null : Colors.white,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: selected ? Colors.transparent : const Color(0xFFE0E7EF),
+                    color: selected
+                        ? Colors.transparent
+                        : AppTheme.kDeviceTabBorder, // ← your color
+                    width: 1,
                   ),
                 ),
                 child: Text(

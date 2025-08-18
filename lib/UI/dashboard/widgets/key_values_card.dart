@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// "Data receipt" section styled like your figma:
-/// - Title "Data receipt"
-/// - Two flat fields with left label and right value inside the same box.
+/// "Data receipt" section — compact spacing.
 class DataReceiptSection extends StatelessWidget {
   final String deviceId;
   final String extenderId;
@@ -37,7 +35,7 @@ class DataReceiptSection extends StatelessWidget {
       borderSide: BorderSide.none,
     ),
     contentPadding:
-    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     suffixText: right,
     suffixStyle: _valueStyle,
   );
@@ -45,12 +43,12 @@ class DataReceiptSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Data receipt type', style: _titleStyle),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           // Device id field
           TextFormField(
@@ -59,7 +57,7 @@ class DataReceiptSection extends StatelessWidget {
             style: _labelStyle,
             decoration: _decoration(deviceId),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
 
           // Extender id field
           TextFormField(

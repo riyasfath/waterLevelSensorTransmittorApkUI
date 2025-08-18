@@ -17,13 +17,26 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int selectedDevice = 0;
-  final int percent = 75;   // live value for water measure (0..100)
-  final int battery = 65;   // live value for battery (0..100)
+  final int percent = 75; // live value 0..100
+  final int battery = 65; // live value 0..100
+
+  // Layout knobs (as you asked)
+  static const double _tankH = 287;
+  static const double _tankW = 245;
+  static const double _tankTop = 10;   // smaller = tank higher under tabs
+  static const double _overlap  = 37;  // DO NOT CHANGE
 
   @override
   Widget build(BuildContext context) {
+    // Height math so the next section sits right after the overlapped row.
+    const double rowHeightEstimate = 48; // Text + field
+    const double bottomPad = 2;
+    final double extraBelow = (rowHeightEstimate - _overlap + bottomPad);
+    final double stackHeight =
+        _tankTop + _tankH + (extraBelow > 0 ? extraBelow : 0);
+
     return Scaffold(
-      backgroundColor: Colors.white, // pure white dashboard
+      backgroundColor: Colors.white,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -34,43 +47,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: const EdgeInsets.fromLTRB(12, 2, 12, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Device tabs (unchanged)
-                  DeviceTabs(
-                    index: selectedDevice,
-                    onChanged: (i) => setState(() => selectedDevice = i),
+                  // Tabs + Tank + Last update
+                  SizedBox(
+                    height: stackHeight,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // Tabs
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: DeviceTabs(
+                            index: selectedDevice,
+                            onChanged: (i) => setState(() => selectedDevice = i),
+                          ),
+                        ),
+                        // Tank
+                        Positioned(
+                          top: _tankTop,
+                          left: 0,
+                          right: 0,
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: TankCard(
+                              percent: percent,
+                              height: _tankH,
+                              width: _tankW,
+                              imageScale: 0.72,
+                              shadowWidthFactor: 0.5,
+                              shadowHeight: 10,
+                              shadowGap: 2,
+                              shadowBlur: 14,
+                              shadowSpread: -6,
+                            ),
+                          ),
+                        ),
+                        // Last update (overlapped up into tank)
+                        const Positioned(
+                          // _tankTop + _tankH - _overlap computed inline
+                          top: _tankTop + _tankH - _overlap,
+                          left: 0,
+                          right: 0,
+                          child: LabeledInfoRow(
+                            title: "Last update",
+                            left: "12/08/2025",
+                            right: "6:05 AM",
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
 
-                  // Water tank art
-                  TankCard(percent: percent),
+                  // >>> Just a little gap before battery level <<<
+                  const SizedBox(height: 15),
 
-                  // Last update (date left, time right)
-                  const LabeledInfoRow(
-                    title: "Last update",
-                    left: "12/08/2025",
-                    right: "6:05 AM",
-                  ),
-
-                  // Battery (icon left, % right)
+                  // Battery level
                   BatteryProgressCard(
                     level: battery,
                     surfaceColor: Colors.transparent,
                   ),
 
-                  // Water position: DISPLAY ONLY, nearest chip highlighted
+                  // Water position & Data receipt
                   WaterPositionCard(level: percent),
-
-                  // Data receipt section: two flat fields
                   const DataReceiptSection(
                     deviceId: '#10005SFC',
                     extenderId: '#1566HTG',
                   ),
-
-                  const SizedBox(height: 14),
                 ],
               ),
             ),

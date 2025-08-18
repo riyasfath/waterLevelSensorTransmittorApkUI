@@ -1,21 +1,15 @@
 import 'package:flutter/material.dart';
 
-/// Display-only water position (no selection / no tick).
-/// Highlights the nearest step (25/50/75/100) based on [level].
-/// Active chip uses gradient #5E9DF2 → #365B8C; others use text #7D7575.
+/// Display-only water position (nearest of 25/50/75/100).
 class WaterPositionCard extends StatelessWidget {
-  final int level; // 0..100 current measured water level
-
-  const WaterPositionCard({
-    super.key,
-    required this.level,
-  });
+  final int level; // 0..100
+  const WaterPositionCard({super.key, required this.level});
 
   static const _titleStyle =
   TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
 
   static const _offText = TextStyle(
-    color: Color(0xFF7D7575), // other chips text color
+    color: Color(0xFF7D7575),
     fontWeight: FontWeight.w600,
   );
 
@@ -26,26 +20,22 @@ class WaterPositionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // discrete steps shown as chips
     const steps = [25, 50, 75, 100];
-
-    // nearest step to measured level
     final activeIndex = _nearestIndex(level, steps);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('water position', style: _titleStyle),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Row(
             children: List.generate(steps.length, (i) {
               final selected = i == activeIndex;
               return Expanded(
                 child: Padding(
-                  // keep buttons "much close" to each other
-                  padding: EdgeInsets.only(right: i < steps.length - 1 ? 6 : 0),
+                  padding: EdgeInsets.only(right: i < steps.length - 1 ? 4 : 0),
                   child: _Chip(
                     label: '${steps[i]}%',
                     selected: selected,
@@ -60,14 +50,10 @@ class WaterPositionCard extends StatelessWidget {
   }
 
   static int _nearestIndex(int value, List<int> steps) {
-    int bestIdx = 0;
-    int bestDiff = 1 << 30;
+    int bestIdx = 0, bestDiff = 1 << 30;
     for (var i = 0; i < steps.length; i++) {
       final d = (steps[i] - value).abs();
-      if (d < bestDiff) {
-        bestDiff = d;
-        bestIdx = i;
-      }
+      if (d < bestDiff) { bestDiff = d; bestIdx = i; }
     }
     return bestIdx;
   }
@@ -81,7 +67,7 @@ class _Chip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 36,
+      height: 34,
       alignment: Alignment.center,
       decoration: selected
           ? BoxDecoration(
@@ -96,7 +82,10 @@ class _Chip extends StatelessWidget {
         color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Text(label, style: selected ? WaterPositionCard._onText : WaterPositionCard._offText),
+      child: Text(
+        label,
+        style: selected ? WaterPositionCard._onText : WaterPositionCard._offText,
+      ),
     );
   }
 }

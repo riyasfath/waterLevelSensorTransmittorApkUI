@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Flat row (no Card) so multiple rows stack with no visible gaps.
-/// Shows [title], and a single TextFormField with:
-/// - left/start: [left] text (e.g., date)
-/// - right/end:  [right] text (e.g., time)
+/// Flat row (no Card). Title + one field showing left/right values.
 class LabeledInfoRow extends StatelessWidget {
   final String title, left, right; // left = start, right = end
   const LabeledInfoRow({
@@ -13,7 +10,6 @@ class LabeledInfoRow extends StatelessWidget {
     required this.right,
   });
 
-  // Inside-the-field text style (both left & right)
   static const _valueStyle = TextStyle(
     color: Color(0xB5000000), // #000000B5
     fontSize: 14,
@@ -28,27 +24,25 @@ class LabeledInfoRow extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       borderSide: BorderSide.none,
     ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    suffixText: suffix,       // right text
-    suffixStyle: _valueStyle, // same style as left
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    suffixText: suffix,
+    suffixStyle: _valueStyle,
   );
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      // tight spacing so multiple rows feel like one continuous panel
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
+          Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 6),
           TextFormField(
             readOnly: true,
-            initialValue: left,     // left/start text
-            style: _valueStyle,     // <-- #000000B5, 14px
-            decoration: _decoration(right), // right/end text
+            initialValue: left,
+            style: _valueStyle,
+            decoration: _decoration(right),
           ),
         ],
       ),

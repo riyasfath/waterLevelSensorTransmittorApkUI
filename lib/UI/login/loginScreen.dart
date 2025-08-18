@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import 'SignupScreen.dart';
 
 class LoginScreenMock extends StatefulWidget {
   const LoginScreenMock({super.key});
@@ -145,29 +146,22 @@ class _LoginScreenMockState extends State<LoginScreenMock> {
                   const SizedBox(height: 14),
 
                   // Password
-                  // Password
                   const Align(
                     alignment: Alignment.centerLeft,
                     child: Text("Password",
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black87)),
                   ),
                   const SizedBox(height: 6),
-
-                  SizedBox(
-                    width: w * 0.84,       // same as username
-                    height: w * 0.15,
-                    child: TextField(
-                      obscureText: _obscure,
-                      decoration: InputDecoration(
-                        hintText: "••••••••",
-                        suffixIcon: IconButton(
-                          onPressed: () => setState(() => _obscure = !_obscure),
-                          icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-                        ),
+                  TextField(
+                    obscureText: _obscure,
+                    decoration: InputDecoration(
+                      hintText: "••••••••",
+                      suffixIcon: IconButton(
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                        icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
                       ),
                     ),
                   ),
-
 
                   SizedBox(height: w * 0.06),
 
@@ -180,8 +174,12 @@ class _LoginScreenMockState extends State<LoginScreenMock> {
                         backgroundColor: AppTheme.kButtonDark,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      onPressed: () {},
-                      child: const Text("Sign Up", style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500, color: Colors.white)),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => const SignupScreen()),
+                        );
+                      },
+                      child: const Text("Sign Up", style: TextStyle(fontSize: 16, color: Colors.white)),
                     ),
                   ),
                 ],

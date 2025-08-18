@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'battery_icon.dart';
 
-/// Flat battery row (no Card, no progress bar) to match LabeledInfoRow.
-/// Icon on the left, percentage at the far right inside a single TextFormField.
+/// Battery row: label on top, field with icon left and % right.
 class BatteryProgressCard extends StatelessWidget {
   final int level; // 0-100
-  // kept for API compatibility; not used now (no progress bar / surface)
-  final Color surfaceColor;
+  final Color surfaceColor; // kept for API compatibility
 
   const BatteryProgressCard({
     super.key,
@@ -28,35 +26,32 @@ class BatteryProgressCard extends StatelessWidget {
       borderRadius: BorderRadius.all(Radius.circular(10)),
       borderSide: BorderSide.none,
     ),
-    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
   );
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      // same outer padding as LabeledInfoRow so everything feels like one panel
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+      // TOP = 2 keeps it close to "Last update"
+      padding: const EdgeInsets.fromLTRB(12, 2, 12, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text("battery level",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           TextFormField(
             readOnly: true,
-            initialValue: '', // no left text; show only the icon on the left
+            initialValue: '',
             style: _valueStyle,
             textAlignVertical: TextAlignVertical.center,
             decoration: _decoration().copyWith(
-              // battery icon on the left
-              prefixIcon: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: BatteryIcon(level: 65), // level here doesn't affect suffix
+              prefixIcon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: BatteryIcon(level: level),
               ),
               prefixIconConstraints:
               const BoxConstraints(minWidth: 0, minHeight: 0),
-
-              // percentage on the far right — use suffixIcon to force edge alignment
               suffixIcon: Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: Text('$level %', style: _valueStyle),
