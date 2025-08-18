@@ -20,10 +20,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final int percent = 75; // live value 0..100
   final int battery = 65; // live value 0..100
 
-  // Layout knobs (as you asked)
+  // Layout knobs
   static const double _tankH = 287;
   static const double _tankW = 245;
-  static const double _tankTop = 10;   // smaller = tank higher under tabs
+  static const double _tankTop = 20;    // moved a little more up (smaller = higher)
   static const double _overlap  = 37;  // DO NOT CHANGE
 
   @override
@@ -79,17 +79,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               height: _tankH,
                               width: _tankW,
                               imageScale: 0.72,
-                              shadowWidthFactor: 0.5,
-                              shadowHeight: 10,
-                              shadowGap: 2,
-                              shadowBlur: 14,
-                              shadowSpread: -6,
+
+                              // Base image under tank (exact 383x45)
+                              baseImageAsset: 'assets/images/tank_shadow.png',
+                              baseFixedWidth: 383,
+                              baseFixedHeight: 45,
+                              baseGap: 0, // adjust if you need it tighter/looser
+
+                              // Subtle shadow settings
+                              showShadow: true,
+                              shadowWidthFactor: 0.55,
+                              shadowHeight: 12,
+                              shadowBlur: 10,
+                              shadowSpread: -4,
+                              shadowOpacity: 0.06,
+                              shadowGlowOpacity: 0.15,
                             ),
                           ),
                         ),
                         // Last update (overlapped up into tank)
                         const Positioned(
-                          // _tankTop + _tankH - _overlap computed inline
                           top: _tankTop + _tankH - _overlap,
                           left: 0,
                           right: 0,
@@ -103,7 +112,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
 
-                  // >>> Just a little gap before battery level <<<
                   const SizedBox(height: 15),
 
                   // Battery level

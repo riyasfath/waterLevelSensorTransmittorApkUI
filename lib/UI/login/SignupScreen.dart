@@ -11,77 +11,54 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   bool _obscure = true;
 
+  // Top & bottom image design sizes (for aspect ratios)
+  static const double _hdrDesignW = 444, _hdrDesignH = 120; // header image
+  static const double _botDesignW = 553, _botDesignH = 153; // bottom image
+  static const String _hdrAsset = 'assets/images/top_header.png';
+  static const String _botAsset = 'assets/images/bottom_waves.png';
+
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
-    final bottomWaveH = w * 0.36;
-    final topWaveH = w * 0.28;
+
+    // Responsive heights preserving the images’ aspect ratios
+    final double headerImgH = w * (_hdrDesignH / _hdrDesignW);
+    final double bottomImgH = w * (_botDesignH / _botDesignW);
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Top curved gradient
+          // --- TOP: header image (replaces AppBar/clipper) ---
           Positioned(
             top: 0, left: 0, right: 0,
-            child: SizedBox(
-              height: topWaveH,
-              child: ClipPath(
-                clipper: _TopCurveClipper(),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppTheme.kBlueLight, AppTheme.kBlueDark],
-                    ),
-                  ),
-                ),
-              ),
+            height: headerImgH,
+            child: IgnorePointer(
+              child: Image.asset(_hdrAsset, fit: BoxFit.fill),
             ),
           ),
 
-          // Bottom layered waves
+          // --- BOTTOM: waves image (replaces clippers) ---
           Positioned(
             left: 0, right: 0, bottom: 0,
-            child: SizedBox(
-              height: bottomWaveH,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: ClipPath(
-                      clipper: _BottomWaveClipper1(),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [AppTheme.kBlueLight, AppTheme.kBlueDark],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: ClipPath(
-                      clipper: _BottomWaveClipper2(),
-                      child: Container(color: Colors.white.withOpacity(0.12)),
-                    ),
-                  ),
-                ],
-              ),
+            height: bottomImgH,
+            child: IgnorePointer(
+              child: Image.asset(_botAsset, fit: BoxFit.fill),
             ),
           ),
 
-          // Content
+          // --- CONTENT ---
           SafeArea(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: w * 0.08)
-                  .copyWith(bottom: bottomWaveH * 0.85),
+              // leave space so content doesn’t collide with bottom waves
+                  .copyWith(bottom: bottomImgH * 0.85),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: topWaveH * 0.30),
+                  // push form below the curved part of the top image
+                  SizedBox(height: headerImgH * 0.82),
+
                   const Text(
                     "Create Account",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
@@ -156,7 +133,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // ----- Device Id with QR + Add Device -----
                   // ----- Device Id -----
                   const _Label("Device Id"),
                   const SizedBox(height: 6),
@@ -186,10 +162,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: const Text("Add Device", style: TextStyle(fontSize: 12)),
                     ),
                   ),
-                  // const SizedBox(height: 12),
 
-
-                  // ----- Extender Id with QR + Add Device -----
                   // ----- Extender Id -----
                   const _Label("Extender Id"),
                   const SizedBox(height: 6),
@@ -221,29 +194,28 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 12),
 
-
                   // Login button
                   SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.kButtonDark, // #012A6A
+                        backgroundColor: AppTheme.kButtonDark,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const DashboardScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const DashboardScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Login",
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
                     ),
                   ),
                 ],
@@ -264,9 +236,14 @@ class _Label extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.centerLeft,
-      child: Text(text,
-          style: const TextStyle(
-              fontSize: 15, color: Colors.black87, fontWeight: FontWeight.w500)),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 15,
+          color: Colors.black87,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 }
@@ -283,49 +260,3 @@ class _SizedField extends StatelessWidget {
   }
 }
 
-// ---------- Reused clippers ----------
-class _TopCurveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size s) {
-    final w = s.width, h = s.height;
-    return Path()
-      ..lineTo(0, h * 0.20)
-      ..quadraticBezierTo(w * 0.50, h * 0.45, w, h * 0.16)
-      ..lineTo(w, 0)
-      ..close();
-  }
-  @override
-  bool shouldReclip(_) => false;
-}
-
-class _BottomWaveClipper1 extends CustomClipper<Path> {
-  @override
-  Path getClip(Size s) {
-    final w = s.width, h = s.height;
-    return Path()
-      ..moveTo(0, h * 0.30)
-      ..quadraticBezierTo(w * 0.25, h * 0.15, w * 0.50, h * 0.28)
-      ..quadraticBezierTo(w * 0.78, h * 0.45, w, h * 0.25)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-  }
-  @override
-  bool shouldReclip(_) => false;
-}
-
-class _BottomWaveClipper2 extends CustomClipper<Path> {
-  @override
-  Path getClip(Size s) {
-    final w = s.width, h = s.height;
-    return Path()
-      ..moveTo(0, h * 0.55)
-      ..quadraticBezierTo(w * 0.28, h * 0.35, w * 0.52, h * 0.60)
-      ..lineTo(w, h * 0.35)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-  }
-  @override
-  bool shouldReclip(_) => false;
-}

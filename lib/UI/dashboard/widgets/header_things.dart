@@ -13,56 +13,56 @@ class headerThings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const appBarColor = AppTheme.primary;
-
     return SliverAppBar(
       pinned: true,
       expandedHeight: 82,
       collapsedHeight: 66,
       automaticallyImplyLeading: false,
-      backgroundColor: appBarColor,
+      backgroundColor: AppTheme.primary,
       surfaceTintColor: Colors.transparent,
       flexibleSpace: Container(
         decoration: const BoxDecoration(
-          color: appBarColor,
+          color: AppTheme.primary,
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              bottom: 22,
-              left: 0,
-              right: 0,
-              child: Text(
-                "$date   $time",
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  height: 1.1,
+        child: Padding(
+          // positions the row near the bottom like your figma
+          padding: const EdgeInsets.only(left: 8, right: 4, bottom: 14),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Left spacer balances the icon width to keep the text truly centered
+                const SizedBox(width: 40),
+
+                // Centered date+time
+                Expanded(
+                  child: Text(
+                    "$date   $time",
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      height: 1.1,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            Positioned(
-              bottom: 9,
-              right: -2,
-              child: IconButton(
-                icon: const Icon(
-                  Icons.settings_outlined,
-                  color: Colors.white,
-                  size: 20,
+
+                // Settings icon on the same line, right-aligned
+                IconButton(
+                  onPressed: onSettings,
+                  tooltip: 'Settings',
+                  icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                  splashRadius: 18,
                 ),
-                onPressed: onSettings,
-                tooltip: 'Settings',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                visualDensity: VisualDensity.compact,
-                splashRadius: 18,
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

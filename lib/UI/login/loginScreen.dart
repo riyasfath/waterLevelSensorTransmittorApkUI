@@ -11,79 +11,66 @@ class LoginScreenMock extends StatefulWidget {
 class _LoginScreenMockState extends State<LoginScreenMock> {
   bool _obscure = true;
 
+  // Field & button sizing
+  static const double _kFieldHeight = 45;
+  static const double _kMaxFieldWidth = 389;
+
+  // Design aspect ratios (fixed)
+  static const double _hdrAR = 120 / 444; // = 0.27027...
+  static const double _botAR = 153 / 553; // = 0.2765...
+
+  // Asset paths
+  static const String _hdrAsset = 'assets/images/top_header.png';
+  static const String _botAsset = 'assets/images/bottom_waves.png';
+
+  // Tank & shadow proportions (derived from your original sizes)
+  // Shadow width uses the field width (1.0). Tank ~201/383, heights from originals.
+  static const double _shadowWidthFactor = 1.0;
+  static const double _shadowHeightPerW = 45 / 383;   // ≈ 0.1175 * width
+  static const double _tankWidthFactor   = 201 / 383; // ≈ 0.525 * width
+  static const double _tankAR            = 237 / 201; // tankH = tankW * 1.179
+  static const double _overlapPerW       = 16 / 383;  // ≈ 0.0418 * width
+
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
-    final bottomWaveH = w * 0.36;
-    final topWaveH    = w * 0.28;
+
+    // Responsive heights preserving aspect ratios
+    final double headerImgH = w * _hdrAR;
+    final double bottomImgH = w * _botAR;
+
+    // Field/button width: up to 389dp
+    final double horizontalPad = w * 0.08;
+    final double available = w - (horizontalPad * 2);
+    final double fieldWidth = available > _kMaxFieldWidth ? _kMaxFieldWidth : available;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
+        clipBehavior: Clip.none,
         children: [
-          // Top curved gradient
+          // Top header image
           Positioned(
-            top: 0, left: 0, right: 0,
-            child: SizedBox(
-              height: topWaveH,
-              child: ClipPath(
-                clipper: _TopCurveClipper(),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppTheme.kBlueLight, AppTheme.kBlueDark],
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            top: 0, left: 0, right: 0, height: headerImgH,
+            child: IgnorePointer(child: Image.asset(_hdrAsset, fit: BoxFit.fill)),
           ),
 
-          // Bottom waves
+          // Bottom waves image
           Positioned(
-            left: 0, right: 0, bottom: 0,
-            child: SizedBox(
-              height: bottomWaveH,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: ClipPath(
-                      clipper: _BottomWaveClipper1(),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [AppTheme.kBlueLight, AppTheme.kBlueDark],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: ClipPath(
-                      clipper: _BottomWaveClipper2(),
-                      child: Container(
-                        color: Colors.white.withOpacity(0.12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            left: 0, right: 0, bottom: 0, height: bottomImgH,
+            child: IgnorePointer(child: Image.asset(_botAsset, fit: BoxFit.fill)),
           ),
 
           // Content
           SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: w * 0.08)
-                  .copyWith(bottom: bottomWaveH * 0.85),
+              padding: EdgeInsets.symmetric(horizontal: horizontalPad)
+                  .copyWith(bottom: bottomImgH * 0.85),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: topWaveH * 0.35),
+                  SizedBox(height: headerImgH * 0.85),
+
                   const Text("Hello",
                       style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500)),
                   const SizedBox(height: 4),
@@ -92,86 +79,63 @@ class _LoginScreenMockState extends State<LoginScreenMock> {
 
                   SizedBox(height: w * 0.06),
 
-                  // Tank image
+                  // Tank + shadow (same layout/size look, simpler math)
                   SizedBox(
-                    width: w * 0.55,
-                    child: Column(
-                      children: [
-                        Image.asset(
-                          'assets/images/tankerempty.png',
-                          fit: BoxFit.contain,
-                          height: w * 0.48,
-                        ),
-                        SizedBox(height: w * 0.02),
-                        Container(
-                          height: 10,
-                          margin: EdgeInsets.symmetric(horizontal: w * 0.12),
-                          decoration: BoxDecoration(
-                            color: Colors.black12,
-                            borderRadius: BorderRadius.circular(100),
-                            boxShadow: const [
-                              BoxShadow(
-                                blurRadius: 20,
-                                spreadRadius: -6,
-                                color: Colors.black26,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                    width: fieldWidth,
+                    child: _TankWithShadow(width: fieldWidth),
                   ),
 
                   SizedBox(height: w * 0.08),
 
-                  // Username
-                  // Username
                   const Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("User Name",
-                        style: TextStyle(fontSize: 15, color: Colors.black87, fontWeight: FontWeight.w500)),
+                    child: Text(
+                      "User Name",
+                      style: TextStyle(fontSize: 15, color: Colors.black87, fontWeight: FontWeight.w500),
+                    ),
                   ),
                   const SizedBox(height: 6),
-
                   SizedBox(
-                    width: w * 0.84,       // ~84% of screen width
-                    height: w * 0.15,      // height responsive (15% of width)
+                    width: fieldWidth,
+                    height: _kFieldHeight,
                     child: const TextField(
-                      decoration: InputDecoration(
-                        hintText: "Enter User Name",
-                      ),
+                      decoration: InputDecoration(hintText: "Enter User Name"),
                     ),
                   ),
 
                   const SizedBox(height: 14),
 
-                  // Password
                   const Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Password",
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black87)),
+                    child: Text(
+                      "Password",
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black87),
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  TextField(
-                    obscureText: _obscure,
-                    decoration: InputDecoration(
-                      hintText: "••••••••",
-                      suffixIcon: IconButton(
-                        onPressed: () => setState(() => _obscure = !_obscure),
-                        icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                  SizedBox(
+                    width: fieldWidth,
+                    height: _kFieldHeight,
+                    child: TextField(
+                      obscureText: _obscure,
+                      decoration: InputDecoration(
+                        hintText: "•••• ••••",
+                        suffixIcon: IconButton(
+                          onPressed: () => setState(() => _obscure = !_obscure),
+                          icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                        ),
                       ),
                     ),
                   ),
 
                   SizedBox(height: w * 0.06),
 
-                  // CTA Button with #012A6A
                   SizedBox(
-                    width: double.infinity,
+                    width: fieldWidth,
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.kButtonDark,
+                        backgroundColor: AppTheme.kButtonDark, // keep your theme color
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                       onPressed: () {
@@ -192,49 +156,44 @@ class _LoginScreenMockState extends State<LoginScreenMock> {
   }
 }
 
-// --- Clippers ---
-class _TopCurveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size s) {
-    final w = s.width, h = s.height;
-    return Path()
-      ..lineTo(0, h * 0.20)
-      ..quadraticBezierTo(w * 0.50, h * 0.45, w, h * 0.16)
-      ..lineTo(w, 0)
-      ..close();
-  }
-  @override
-  bool shouldReclip(_) => false;
-}
+class _TankWithShadow extends StatelessWidget {
+  final double width;
+  const _TankWithShadow({required this.width});
 
-class _BottomWaveClipper1 extends CustomClipper<Path> {
-  @override
-  Path getClip(Size s) {
-    final w = s.width, h = s.height;
-    return Path()
-      ..moveTo(0, h * 0.30)
-      ..quadraticBezierTo(w * 0.25, h * 0.15, w * 0.50, h * 0.28)
-      ..quadraticBezierTo(w * 0.78, h * 0.45, w, h * 0.25)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-  }
-  @override
-  bool shouldReclip(_) => false;
-}
+  // Match the constants from the parent for consistency
+  static const double _shadowWidthFactor = _LoginScreenMockState._shadowWidthFactor;
+  static const double _shadowHeightPerW  = _LoginScreenMockState._shadowHeightPerW;
+  static const double _tankWidthFactor   = _LoginScreenMockState._tankWidthFactor;
+  static const double _tankAR            = _LoginScreenMockState._tankAR;
+  static const double _overlapPerW       = _LoginScreenMockState._overlapPerW;
 
-class _BottomWaveClipper2 extends CustomClipper<Path> {
   @override
-  Path getClip(Size s) {
-    final w = s.width, h = s.height;
-    return Path()
-      ..moveTo(0, h * 0.55)
-      ..quadraticBezierTo(w * 0.28, h * 0.35, w * 0.52, h * 0.60)
-      ..lineTo(w, h * 0.35)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
+  Widget build(BuildContext context) {
+    final double sW = width * _shadowWidthFactor;
+    final double sH = width * _shadowHeightPerW;
+    final double tW = width * _tankWidthFactor;
+    final double tH = tW * _tankAR;
+    final double overlap = width * _overlapPerW;
+    final double stackH = tH + sH - overlap;
+
+    return SizedBox(
+      height: stackH,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          Positioned(
+            top: tH - overlap,
+            width: sW,
+            height: sH,
+            child: Image.asset('assets/images/tank_shadow.png', fit: BoxFit.fill),
+          ),
+          SizedBox(
+            width: tW,
+            height: tH,
+            child: Image.asset('assets/images/tankerempty.png', fit: BoxFit.contain),
+          ),
+        ],
+      ),
+    );
   }
-  @override
-  bool shouldReclip(_) => false;
 }
