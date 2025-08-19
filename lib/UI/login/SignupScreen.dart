@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:waterlevelcopy/UI/dashboard/dashboardScreen.dart';
 import '../../theme/app_theme.dart';
+import 'QR_scanScreen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -10,12 +11,42 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  // --- Form key ---
+  final _formKey = GlobalKey<FormState>();
+
+  // --- Controllers ---
+  final _userCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _storeCtrl = TextEditingController();
+  final _tankCtrl  = TextEditingController();
+
+  // Read-only "display" controllers (show last scanned value)
+  final _devIdDisplayCtrl = TextEditingController();
+  final _extIdDisplayCtrl = TextEditingController();
+
   bool _obscure = true;
+
+  // Multi-scan lists
+  final List<String> _deviceIds   = [];
+  final List<String> _extenderIds = [];
+
+  @override
+  void dispose() {
+    _userCtrl.dispose();
+    _passCtrl.dispose();
+    _emailCtrl.dispose();
+    _storeCtrl.dispose();
+    _tankCtrl.dispose();
+    _devIdDisplayCtrl.dispose();
+    _extIdDisplayCtrl.dispose();
+    super.dispose();
+  }
 
   final String topImage = "assets/images/top_header.png";
   final String bottomImage = "assets/images/bottom_waves.png";
 
-  // Field decoration from Figma
+  // Field decoration from Figma (tweaked with isDense + error style)
   final InputDecoration _fxDecoration = const InputDecoration(
     filled: true,
     fillColor: Color(0x42D9D9D9), // #D9D9D9 26%
@@ -23,12 +54,69 @@ class _SignupScreenState extends State<SignupScreen> {
       borderRadius: BorderRadius.all(Radius.circular(5)),
       borderSide: BorderSide.none,
     ),
+    isDense: true,
     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    errorStyle: TextStyle(fontSize: 12, height: 1.0),
   );
 
-  static const double _fieldW = 360;
-  static const double _fieldH = 45;
+  static const double _fieldW = 360; // width only; no fixed height anymore
   static const double _gapTop = 29;
+
+  // --- Validators ---
+  String? _required(String? v, String label) =>
+      (v == null || v.trim().isEmpty) ? '$label is required' : null;
+
+  final _emailRegex = RegExp(r'^[\w\.\-]+@[\w\.\-]+\.\w+$');
+  String? _emailVal(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Email is required';
+    if (!_emailRegex.hasMatch(v.trim())) return 'Enter a valid email';
+    return null;
+  }
+
+  String? _passwordVal(String? v) {
+    if (v == null || v.isEmpty) return 'Password is required';
+    if (v.length < 6) return 'Min 6 characters';
+    return null;
+  }
+
+  // For Device/Extender: list-based validators
+  String? _deviceListValidator(_) =>
+      _deviceIds.isEmpty ? 'At least one Device Id is required' : null;
+  String? _extenderListValidator(_) =>
+      _extenderIds.isEmpty ? 'At least one Extender Id is required' : null;
+
+  // ---- Strictly separate scanners ----
+  Future<void> _scanAndAddDevice(FormFieldState<void>? validatorState) async {
+    final code = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const QrScanPage(title: 'Scan Device QR')),
+    );
+    if (code == null || code.trim().isEmpty) return;
+
+    setState(() {
+      if (!_deviceIds.contains(code)) {
+        _deviceIds.add(code);
+      }
+      _devIdDisplayCtrl.text = code; // show last scanned
+      validatorState?.validate();
+    });
+  }
+
+  Future<void> _scanAndAddExtender(FormFieldState<void>? validatorState) async {
+    final code = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const QrScanPage(title: 'Scan Extender QR')),
+    );
+    if (code == null || code.trim().isEmpty) return;
+
+    setState(() {
+      if (!_extenderIds.contains(code)) {
+        _extenderIds.add(code);
+      }
+      _extIdDisplayCtrl.text = code; // show last scanned
+      validatorState?.validate();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,128 +148,261 @@ class _SignupScreenState extends State<SignupScreen> {
           SafeArea(
             child: Padding(
               padding: EdgeInsets.only(
-                top: headerImgH * 0.8,   // push down below top curve
+                top: headerImgH * 0.8,    // push below top curve
                 bottom: bottomImgH * 0.9, // stop above bottom waves
               ),
               child: Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white, // Pure white background
-                ),
+                color: Colors.white,
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                   child: Container(
                     width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Colors.white, // Double ensure pure white
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Create Account",
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
-                        ),
-
-                        // === User Name ===
-                        const SizedBox(height: _gapTop),
-                        _label("User Name"),
-                        _box(TextField(
-                          decoration: _fxDecoration.copyWith(hintText: "Enter User Name"),
-                        )),
-
-                        // === Password ===
-                        const SizedBox(height: _gapTop),
-                        _label("Password"),
-                        _box(TextField(
-                          obscureText: _obscure,
-                          decoration: _fxDecoration.copyWith(
-                            hintText: "•••• ••••",
-                            suffixIcon: IconButton(
-                              onPressed: () => setState(() => _obscure = !_obscure),
-                              icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-                            ),
+                    color: Colors.white,
+                    child: Form(
+                      key: _formKey,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Create Account",
+                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
                           ),
-                        )),
 
-                        // === Email ===
-                        const SizedBox(height: _gapTop),
-                        _label("Email"),
-                        _box(TextField(
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: _fxDecoration.copyWith(hintText: "Enter"),
-                        )),
+                          // === User Name ===
+                          const SizedBox(height: _gapTop),
+                          _label("User Name"),
+                          _box(TextFormField(
+                            controller: _userCtrl,
+                            textInputAction: TextInputAction.next,
+                            decoration: _fxDecoration.copyWith(hintText: "Enter User Name"),
+                            validator: (v) => _required(v, 'User Name'),
+                          )),
 
-                        // === Store Name ===
-                        const SizedBox(height: _gapTop),
-                        _label("Store Name"),
-                        _box(TextField(
-                          decoration: _fxDecoration.copyWith(hintText: "Enter Store Name"),
-                        )),
-
-                        // === Tank Model ===
-                        const SizedBox(height: _gapTop),
-                        _label("Water Tank Model"),
-                        _box(TextField(
-                          decoration: _fxDecoration.copyWith(hintText: "Enter Tank Model"),
-                        )),
-
-                        // === Device Id ===
-                        const SizedBox(height: _gapTop),
-                        _label("Device Id"),
-                        _box(TextField(
-                          decoration: _fxDecoration.copyWith(
-                            hintText: "Scan Qr Code",
-                            suffixIcon: const Icon(Icons.qr_code_scanner_outlined),
-                          ),
-                        )),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {},
-                            child: const Text("Add Device", style: TextStyle(fontSize: 12)),
-                          ),
-                        ),
-
-                        // === Extender Id ===
-                        const SizedBox(height: _gapTop),
-                        _label("Extender Id"),
-                        _box(TextField(
-                          decoration: _fxDecoration.copyWith(
-                            hintText: "Scan Qr Code",
-                            suffixIcon: const Icon(Icons.qr_code_scanner_outlined),
-                          ),
-                        )),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {},
-                            child: const Text("Add Device", style: TextStyle(fontSize: 12)),
-                          ),
-                        ),
-
-                        // === Login Button ===
-                        const SizedBox(height: _gapTop),
-                        SizedBox(
-                          width: _fieldW,
-                          height: 50,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.kButtonDark,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          // === Password ===
+                          const SizedBox(height: _gapTop),
+                          _label("Password"),
+                          _box(TextFormField(
+                            controller: _passCtrl,
+                            textInputAction: TextInputAction.next,
+                            obscureText: _obscure,
+                            decoration: _fxDecoration.copyWith(
+                              hintText: "•••• ••••",
+                              suffixIcon: IconButton(
+                                onPressed: () => setState(() => _obscure = !_obscure),
+                                icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
                               ),
                             ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const DashboardScreen()),
-                              );
-                            },
-                            child: const Text("Login", style: TextStyle(color: Colors.white)),
+                            validator: _passwordVal,
+                          )),
+
+                          // === Email ===
+                          const SizedBox(height: _gapTop),
+                          _label("Email"),
+                          _box(TextFormField(
+                            controller: _emailCtrl,
+                            textInputAction: TextInputAction.next,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: _fxDecoration.copyWith(hintText: "Enter"),
+                            validator: _emailVal,
+                          )),
+
+                          // === Store Name ===
+                          const SizedBox(height: _gapTop),
+                          _label("Store Name"),
+                          _box(TextFormField(
+                            controller: _storeCtrl,
+                            textInputAction: TextInputAction.next,
+                            decoration: _fxDecoration.copyWith(hintText: "Enter Store Name"),
+                            validator: (v) => _required(v, 'Store Name'),
+                          )),
+
+                          // === Water Tank Model ===
+                          const SizedBox(height: _gapTop),
+                          _label("Water Tank Model"),
+                          _box(TextFormField(
+                            controller: _tankCtrl,
+                            textInputAction: TextInputAction.next,
+                            decoration: _fxDecoration.copyWith(hintText: "Enter Tank Model"),
+                            validator: (v) => _required(v, 'Water Tank Model'),
+                          )),
+
+                          // === Device Id (scanner only, multi) ===
+                          const SizedBox(height: _gapTop),
+                          _label("Device Id"),
+                          _box(
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                FormField<void>(
+                                  validator: _deviceListValidator,
+                                  builder: (state) {
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        TextFormField(
+                                          controller: _devIdDisplayCtrl,
+                                          readOnly: true,
+                                          decoration: _fxDecoration.copyWith(
+                                            hintText: "Scan QR Code",
+                                            suffixIcon: IconButton(
+                                              tooltip: 'Scan Device Id',
+                                              onPressed: () => _scanAndAddDevice(state),
+                                              icon: const Icon(Icons.qr_code_scanner_outlined),
+                                            ),
+                                          ),
+                                        ),
+                                        if (_deviceIds.isNotEmpty) ...[
+                                          const SizedBox(height: 8),
+                                          Wrap(
+                                            spacing: 8,
+                                            runSpacing: 8,
+                                            children: _deviceIds.map((id) {
+                                              return Chip(
+                                                label: Text(id),
+                                                onDeleted: () {
+                                                  setState(() {
+                                                    _deviceIds.remove(id);
+                                                    _devIdDisplayCtrl.text =
+                                                    _deviceIds.isNotEmpty ? _deviceIds.last : '';
+                                                    state.validate();
+                                                  });
+                                                },
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ],
+                                        if (state.hasError)
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 6),
+                                            child: Text(
+                                              state.errorText!,
+                                              style: const TextStyle(
+                                                color: Colors.red,
+                                                fontSize: 12,
+                                                height: 1.0,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: () => _scanAndAddDevice(null),
+                                    child: const Text("Add Device", style: TextStyle(fontSize: 12)),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+
+                          // === Extender Id (scanner only, multi) ===
+                          const SizedBox(height: _gapTop),
+                          _label("Extender Id"),
+                          _box(
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                FormField<void>(
+                                  validator: _extenderListValidator,
+                                  builder: (state) {
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        TextFormField(
+                                          controller: _extIdDisplayCtrl,
+                                          readOnly: true,
+                                          decoration: _fxDecoration.copyWith(
+                                            hintText: "Scan QR Code",
+                                            suffixIcon: IconButton(
+                                              tooltip: 'Scan Extender Id',
+                                              onPressed: () => _scanAndAddExtender(state),
+                                              icon: const Icon(Icons.qr_code_scanner_outlined),
+                                            ),
+                                          ),
+                                        ),
+                                        if (_extenderIds.isNotEmpty) ...[
+                                          const SizedBox(height: 8),
+                                          Wrap(
+                                            spacing: 8,
+                                            runSpacing: 8,
+                                            children: _extenderIds.map((id) {
+                                              return Chip(
+                                                label: Text(id),
+                                                onDeleted: () {
+                                                  setState(() {
+                                                    _extenderIds.remove(id);
+                                                    _extIdDisplayCtrl.text =
+                                                    _extenderIds.isNotEmpty ? _extenderIds.last : '';
+                                                    state.validate();
+                                                  });
+                                                },
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ],
+                                        if (state.hasError)
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 6),
+                                            child: Text(
+                                              state.errorText!,
+                                              style: const TextStyle(
+                                                color: Colors.red,
+                                                fontSize: 12,
+                                                height: 1.0,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: () => _scanAndAddExtender(null),
+                                    child: const Text("Add Extender", style: TextStyle(fontSize: 12)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // === Login Button ===
+                          const SizedBox(height: _gapTop),
+                          SizedBox(
+                            width: _fieldW,
+                            height: 50,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.kButtonDark,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () {
+                                final ok = _formKey.currentState!.validate();
+                                if (!ok) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Please fix the errors above')),
+                                  );
+                                  return;
+                                }
+                                // You have _deviceIds and _extenderIds lists for submission.
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                                );
+                              },
+                              child: const Text("Login", style: TextStyle(color: Colors.white)),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -203,7 +424,11 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  // Constrain width only; let height grow so error text never shrinks the field
   Widget _box(Widget child) {
-    return SizedBox(width: _fieldW, height: _fieldH, child: child);
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: _fieldW),
+      child: child,
+    );
   }
 }
