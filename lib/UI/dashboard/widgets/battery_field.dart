@@ -50,14 +50,12 @@ class BatteryProgressCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: BatteryIcon(level: level),
               ),
-              prefixIconConstraints:
-              const BoxConstraints(minWidth: 0, minHeight: 0),
+              prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
               suffixIcon: Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: Text('$level %', style: _valueStyle),
               ),
-              suffixIconConstraints:
-              const BoxConstraints(minWidth: 0, minHeight: 0),
+              suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
             ),
           ),
         ],

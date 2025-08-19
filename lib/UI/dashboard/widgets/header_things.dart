@@ -26,17 +26,14 @@ class headerThings extends StatelessWidget {
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
         child: Padding(
-          // positions the row near the bottom like your figma
-          padding: const EdgeInsets.only(left: 8, right: 4, bottom: 14),
+          // closer to the bottom edge
+          padding: const EdgeInsets.only(left: 8, right: 4, bottom: 4),
           child: Align(
             alignment: Alignment.bottomCenter,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Left spacer balances the icon width to keep the text truly centered
-                const SizedBox(width: 40),
-
-                // Centered date+time
+                const SizedBox(width: 40), // left spacer to keep text centered
                 Expanded(
                   child: Text(
                     "$date   $time",
@@ -50,8 +47,6 @@ class headerThings extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // Settings icon on the same line, right-aligned
                 IconButton(
                   onPressed: onSettings,
                   tooltip: 'Settings',

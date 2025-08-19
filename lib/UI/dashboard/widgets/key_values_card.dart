@@ -1,5 +1,32 @@
 import 'package:flutter/material.dart';
 
+/// Optional simple key/value row (used elsewhere if needed).
+class KeyValueRow extends StatelessWidget {
+  final String title, value;
+  const KeyValueRow({super.key, required this.title, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(title, style: const TextStyle(color: Color(0xFF6B7178))),
+        ),
+        Flexible(
+          child: Text(
+            value,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF9AA3AE),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// "Data receipt" section — compact spacing.
 class DataReceiptSection extends StatelessWidget {
   final String deviceId;
@@ -11,20 +38,9 @@ class DataReceiptSection extends StatelessWidget {
     required this.extenderId,
   });
 
-  static const _titleStyle =
-  TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
-
-  static const _labelStyle = TextStyle(
-    color: Color(0xFF6B7178),
-    fontSize: 14,
-    fontWeight: FontWeight.w600,
-  );
-
-  static const _valueStyle = TextStyle(
-    color: Color(0xB5000000), // #000000B5
-    fontSize: 14,
-    fontWeight: FontWeight.w600,
-  );
+  static const _titleStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
+  static const _labelStyle = TextStyle(color: Color(0xFF6B7178), fontSize: 14, fontWeight: FontWeight.w600);
+  static const _valueStyle = TextStyle(color: Color(0xB5000000), fontSize: 14, fontWeight: FontWeight.w600);
 
   InputDecoration _decoration(String right) => InputDecoration(
     isDense: true,
@@ -34,8 +50,7 @@ class DataReceiptSection extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       borderSide: BorderSide.none,
     ),
-    contentPadding:
-    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     suffixText: right,
     suffixStyle: _valueStyle,
   );
@@ -49,8 +64,6 @@ class DataReceiptSection extends StatelessWidget {
         children: [
           const Text('Data receipt type', style: _titleStyle),
           const SizedBox(height: 6),
-
-          // Device id field
           TextFormField(
             readOnly: true,
             initialValue: 'Device id',
@@ -58,8 +71,6 @@ class DataReceiptSection extends StatelessWidget {
             decoration: _decoration(deviceId),
           ),
           const SizedBox(height: 4),
-
-          // Extender id field
           TextFormField(
             readOnly: true,
             initialValue: 'Extender id',

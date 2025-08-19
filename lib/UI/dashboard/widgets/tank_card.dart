@@ -58,8 +58,7 @@ class TankCard extends StatelessWidget {
     final double imageBottomFromCardBottom = (height * (1 - imageScale)) / 2;
 
     // Where to position the base + shadow so they hug the tank bottom
-    final double computedBottom =
-    (imageBottomFromCardBottom - baseGap).clamp(0.0, height);
+    final double computedBottom = (imageBottomFromCardBottom - baseGap).clamp(0.0, height);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),

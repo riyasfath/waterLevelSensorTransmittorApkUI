@@ -1,22 +1,14 @@
 import 'package:flutter/material.dart';
 
-/// Display-only water position (nearest of 25/50/75/100).
+/// Display-only water position (25/50/75/100).
+/// All steps <= current level are highlighted.
 class WaterPositionCard extends StatelessWidget {
   final int level; // 0..100
   const WaterPositionCard({super.key, required this.level});
 
-  static const _titleStyle =
-  TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
-
-  static const _offText = TextStyle(
-    color: Color(0xFF7D7575),
-    fontWeight: FontWeight.w600,
-  );
-
-  static const _onText = TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.w600,
-  );
+  static const _titleStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
+  static const _offText = TextStyle(color: Color(0xFF7D7575), fontWeight: FontWeight.w600);
+  static const _onText  = TextStyle(color: Colors.white, fontWeight: FontWeight.w600);
 
   @override
   Widget build(BuildContext context) {
@@ -32,14 +24,11 @@ class WaterPositionCard extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: List.generate(steps.length, (i) {
-              final selected = i == activeIndex;
+              final selected = i <= activeIndex; // highlight all up-to-current
               return Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(right: i < steps.length - 1 ? 4 : 0),
-                  child: _Chip(
-                    label: '${steps[i]}%',
-                    selected: selected,
-                  ),
+                  child: _Chip(label: '${steps[i]}%', selected: selected),
                 ),
               );
             }),

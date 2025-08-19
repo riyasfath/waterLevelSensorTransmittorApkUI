@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // <-- NEW
 import 'package:waterlevelcopy/UI/dashboard/dashboardScreen.dart';
 import '../../theme/app_theme.dart';
 import 'QR_scanScreen.dart';
@@ -30,6 +31,17 @@ class _SignupScreenState extends State<SignupScreen> {
   // Multi-scan lists
   final List<String> _deviceIds   = [];
   final List<String> _extenderIds = [];
+
+  // ---- SharedPrefs Keys (centralized) ----
+  static const _kUserName     = 'sp_user_name';
+  static const _kPassword     = 'sp_password';
+  static const _kEmail        = 'sp_email';
+  static const _kStoreName    = 'sp_store_name';
+  static const _kTankModel    = 'sp_tank_model';
+  static const _kDeviceIds    = 'sp_device_ids';
+  static const _kExtenderIds  = 'sp_extender_ids';
+  static const _kLastLoginAt  = 'sp_last_login_at';
+  static const _kLoggedIn     = 'sp_logged_in';
 
   @override
   void dispose() {
@@ -116,6 +128,30 @@ class _SignupScreenState extends State<SignupScreen> {
       _extIdDisplayCtrl.text = code; // show last scanned
       validatorState?.validate();
     });
+  }
+
+  // ---- SAVE to SharedPreferences on Login ----
+  Future<void> _saveAllToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Save simple fields
+    await prefs.setString(_kUserName,  _userCtrl.text.trim());
+    await prefs.setString(_kPassword,  _passCtrl.text);           // ⚠️ Plaintext (see note below)
+    await prefs.setString(_kEmail,     _emailCtrl.text.trim());
+    await prefs.setString(_kStoreName, _storeCtrl.text.trim());
+    await prefs.setString(_kTankModel, _tankCtrl.text.trim());
+
+    // Save lists (device ids & extender ids)
+    // Ensure no empties / trim & unique
+    final uniqueDevices  = _deviceIds.map((e) => e.trim()).where((e) => e.isNotEmpty).toSet().toList();
+    final uniqueExtenders= _extenderIds.map((e) => e.trim()).where((e) => e.isNotEmpty).toSet().toList();
+
+    await prefs.setStringList(_kDeviceIds,   uniqueDevices);
+    await prefs.setStringList(_kExtenderIds, uniqueExtenders);
+
+    // Useful flags/metadata
+    await prefs.setBool(_kLoggedIn, true);
+    await prefs.setString(_kLastLoginAt, DateTime.now().toIso8601String());
   }
 
   @override
@@ -384,21 +420,28 @@ class _SignupScreenState extends State<SignupScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              onPressed: () {
+                              onPressed: ()
+                              async {
+
+
                                 final ok = _formKey.currentState!.validate();
                                 if (!ok) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Please fix the errors above')),
+                                    const SnackBar(content: Text('Please fill the required fields')),
                                   );
                                   return;
                                 }
-                                // You have _deviceIds and _extenderIds lists for submission.
+
+                                // Save EVERYTHING to SharedPreferences
+                                await _saveAllToPrefs();
+
+                                if (!mounted) return;
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (_) => const DashboardScreen()),
                                 );
                               },
-                              child: const Text("Login", style: TextStyle(color: Colors.white)),
+                              child: const Text("Sign Up", style: TextStyle(color: Colors.white)),
                             ),
                           ),
                         ],
