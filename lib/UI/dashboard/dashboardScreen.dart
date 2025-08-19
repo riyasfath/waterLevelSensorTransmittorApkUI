@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:waterlevelcopy/UI/dashboard/widgets/battery_field.dart';
 import 'package:waterlevelcopy/UI/dashboard/widgets/key_values_card.dart';
+import 'package:waterlevelcopy/UI/historyScreen/historyScreen.dart';
+import 'package:waterlevelcopy/UI/settings/settingsScreen.dart';
 
 // Widgets
 import 'widgets/header_things.dart';
@@ -43,7 +45,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           headerThings(
             date: "12/08/2025",
             time: "4:39pm",
-            onSettings: () {},
+            onSettings: () {
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+
+
           ),
           SliverToBoxAdapter(
             child: Padding(

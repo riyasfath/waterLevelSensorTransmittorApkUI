@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waterlevelcopy/UI/login/SignupScreen.dart';
 import 'UI/login/loginScreen.dart';
 import 'theme/app_theme.dart';
 
@@ -15,7 +16,7 @@ class WaterLevelApp extends StatelessWidget {
       title: 'Water Level BLE',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
-      home: const LoginScreenMock(),
+      home: const SignupScreen(),
     );
   }
 }
